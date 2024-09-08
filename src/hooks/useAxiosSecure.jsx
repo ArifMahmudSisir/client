@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect } from "react";
 
 const axiosSecure = axios.create({
-  baseURL: "https://server-three-pied.vercel.app/api", 
+  baseURL: "server-green-nine.vercel.app/api", 
   // baseURL: "http://localhost:5000/api", 
 });
 
