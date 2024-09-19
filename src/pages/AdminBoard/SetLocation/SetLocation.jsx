@@ -34,31 +34,37 @@ const SetLocation = () => {
 
   return (
     <div className="m-4">
-      <h3 className="text-xl font-semibold mb-4">Set Location</h3>
-      <div>
-        <div className="flex items-center my-4">
-          <UserSelect onChange={(val) => setUserId(val)} disabled={applyToAll} />
-          <Checkbox
-            checked={applyToAll}
-            onChange={(e) => setApplyToAll(e.target.checked)}
-            className="ml-4"
-          >
-            Set same location for all users
-          </Checkbox>
-          <button
-            onClick={handleSetLocation}
-            className="text-sm md:ms-6 ms-3 md:px-8 px-6 py-2 text-nowrap bg-green-500 text-white font-semibold rounded-md shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            Set Location
-          </button>
-        </div>
-        <p className="my-2 text-center text-gray-600">{message}</p>
-        <LocationMap
-          selectedPlace={selectedPlace}
-          setSelectedPlace={setSelectedPlace}
-        />
-      </div>
+  <h3 className="text-xl font-semibold mb-4">Set Location</h3>
+  <div>
+    <div className="flex flex-wrap items-center my-4">
+      <UserSelect
+        onChange={(val) => setUserId(val)}
+        disabled={applyToAll}
+        className="w-full md:w-auto"
+      />
+      <Checkbox
+        checked={applyToAll}
+        onChange={(e) => setApplyToAll(e.target.checked)}
+        className="ml-0 mt-2 md:ml-4 md:mt-0 w-full md:w-auto"
+      >
+        Set same location for all users
+      </Checkbox>
+      <button
+        onClick={handleSetLocation}
+        className="text-sm w-full md:w-auto mt-3 md:mt-0 md:ms-6 ms-3 md:px-8 px-6 py-2 bg-green-500 text-white font-semibold rounded-md shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
+      >
+        Set Location
+      </button>
     </div>
+    <p className="my-2 text-center text-gray-600">{message}</p>
+    <div className="w-full h-64 md:h-96">
+      <LocationMap
+        selectedPlace={selectedPlace}
+        setSelectedPlace={setSelectedPlace}
+      />
+    </div>
+  </div>
+</div>
   );
 };
 
