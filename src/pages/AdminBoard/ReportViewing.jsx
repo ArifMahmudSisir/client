@@ -10,7 +10,7 @@ const ReportViewing = () => {
   const [users, setUsers] = useState([]);
   const axiosSecure = useAxiosSecure();
   const [selectedUser, setSelectedUser] = useState(null);
-  const [dateRange, setDateRange] = useState(null); // Initially set to null
+  const [dateRange, setDateRange] = useState(null);
   const [attendances, setAttendances] = useState({
     data: [],
     totalTime: null,
@@ -38,7 +38,7 @@ const ReportViewing = () => {
 
   // Fetch attendance data when user or date range changes
   useEffect(() => {
-    if (!selectedUser || !dateRange) return; // Fetch only if both user and dateRange are selected
+    if (!selectedUser || !dateRange) return;
 
     const fetchUserAttendances = async () => {
       setAttendances({
@@ -85,7 +85,7 @@ const ReportViewing = () => {
   }, [axiosSecure, selectedUser, dateRange]);
 
   const handleDateChange = (dates) => {
-    setDateRange(dates); // Update date range when selected
+    setDateRange(dates);
   };
 
   const columns = [
@@ -93,20 +93,20 @@ const ReportViewing = () => {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      render: (text, record) => moment(record.clockIn).format("Do MMM YYYY"),
+      render: (text, record) => moment(record.clockIn).format("D-MM-YY"),
     },
     {
       title: "Clock In",
       dataIndex: "clockIn",
       key: "clockIn",
-      render: (text, record) => moment(record.clockIn).format("h:mm:ss a"),
+      render: (text, record) => moment(record.clockIn).format("h:mm:ss A"),
     },
     {
       title: "Clock Out",
       dataIndex: "clockOut",
       key: "clockOut",
       render: (text, record) =>
-        record.clockOut ? moment(record.clockOut).format("h:mm:ss a") : "N/A",
+        record.clockOut ? moment(record.clockOut).format("h:mm:ss A") : "N/A",
     },
     {
       title: "Total Time",
@@ -120,21 +120,21 @@ const ReportViewing = () => {
         const hours = Math.floor(duration.asHours());
         const minutes = duration.minutes();
         const seconds = duration.seconds();
-        return `${hours} hrs ${minutes} mins ${seconds} secs`;
+        return `${hours}:${minutes}:${seconds}`;
       },
     },
   ];
 
   return (
-    <div>
-      <h1 className="text-4xl font-bold mb-4">Report Viewing</h1>
+    <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+      <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">Report Viewing</h1>
 
-      <div style={{ marginBottom: 20 }}>
+      <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center gap-4">
         <Select
           showSearch
           placeholder="Select a user"
           onChange={setSelectedUser}
-          style={{ width: 400, marginRight: 20 }}
+          style={{ width: "100%", maxWidth: 300 }}
           filterOption={(input, option) =>
             option.label.toLowerCase().includes(input.toLowerCase())
           }
@@ -147,8 +147,9 @@ const ReportViewing = () => {
         <RangePicker
           value={dateRange}
           onChange={handleDateChange}
-          format="YYYY-MM-DD"
-          allowClear={true} // Allow clearing the date range selection
+          format="DD-MM-YYYY"
+          style={{ width: "100%", maxWidth: 300 }}
+          allowClear={true}
         />
       </div>
 
@@ -180,8 +181,9 @@ const ReportViewing = () => {
               columns={columns}
               dataSource={attendances.data}
               rowKey={(record) => record._id}
-              pagination={{ pageSize: 10 }}
-              scroll={{ x: "max-content" }}
+              pagination={{ pageSize: 7 }}
+              scroll={{ x: "max-content", y: 400 }} // Make the table horizontally scrollable if needed
+              sticky
             />
           </>
         )

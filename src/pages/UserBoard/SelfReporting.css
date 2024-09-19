@@ -1,0 +1,12 @@
+.single-calendar .ant-picker-panels .ant-picker-panel-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.single-calendar .ant-picker-panels .ant-picker-panel-container .ant-picker-panel {
+  width: 100%;
+}
+
+.single-calendar .ant-picker-panels .ant-picker-panel-container .ant-picker-panel:nth-child(2) {
+  display: none;
+}

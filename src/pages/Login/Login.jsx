@@ -32,7 +32,7 @@ const Login = () => {
 
   return (
     <>
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 mx-4">
         <img src={Logo} className="h-24 w-24 mb-4" alt="" />
         <div className="bg-white p-8 border-t-4 border-green-400 rounded-lg shadow-lg w-full max-w-md">
           <h2 className="text-2xl font-bold mb-5 text-center">Login</h2>
@@ -82,13 +82,13 @@ const Login = () => {
                 type="submit"
                 className="py-2 px-5 bg-gradient-to-r from-green-400 via-green-500 to-green-600 text-white font-bold rounded-lg transition duration-300 ease-in-out transform hover:scale-105 hover:shadow-lg focus:outline-none"
               >
-                Sign In
+                Login
               </button>
               <Link
                 to="/signUp"
                 className="inline-block align-baseline font-bold text-sm text-green-500"
               >
-                Don’t have an account? Create New
+                Sign Up!
               </Link>
             </div>
           </form>

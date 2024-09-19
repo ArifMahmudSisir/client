@@ -1,26 +1,32 @@
 import React, { useState, useRef, useEffect } from "react";
 import useAxiosSecure from "../../../hooks/useAxiosSecure";
 import { LocationMap } from "./LocationMap";
-import { Select, Spin } from "antd";
+import { Select, Spin, Checkbox } from "antd";
 
 const SetLocation = () => {
   const axiosSecure = useAxiosSecure();
   const [userId, setUserId] = useState("");
   const [message, setMessage] = useState("");
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [applyToAll, setApplyToAll] = useState(false); // State for applying location to all users
+
+  console.log(selectedPlace);
 
   const handleSetLocation = async () => {
     try {
-      // Sends a PUT request to the server to update the user's location
-      const response = await axiosSecure.put(
-        `/location/set-location/${userId}`,
-        selectedPlace.position
-      );
-
-      // The server responds with a message indicating success
-      setMessage(response.data.msg);
+      if (applyToAll) {
+        // Send request to set the same location for all users
+        const response = await axiosSecure.put(`/location/set-location-all`, selectedPlace);
+        setMessage(response.data.msg);
+      } else {
+        // Sends a PUT request to the server to update the specific user's location
+        const response = await axiosSecure.put(
+          `/location/set-location/${userId}`,
+          selectedPlace
+        );
+        setMessage(response.data.msg);
+      }
     } catch (error) {
-      // Handle any errors that occur during the request
       console.log(error.response.data.message);
       setMessage(error.response?.data?.msg || "An error occurred");
     }
@@ -31,7 +37,14 @@ const SetLocation = () => {
       <h3 className="text-xl font-semibold mb-4">Set Location</h3>
       <div>
         <div className="flex items-center my-4">
-          <UserSelect onChange={(val) => setUserId(val)} />
+          <UserSelect onChange={(val) => setUserId(val)} disabled={applyToAll} />
+          <Checkbox
+            checked={applyToAll}
+            onChange={(e) => setApplyToAll(e.target.checked)}
+            className="ml-4"
+          >
+            Set same location for all users
+          </Checkbox>
           <button
             onClick={handleSetLocation}
             className="text-sm md:ms-6 ms-3 md:px-8 px-6 py-2 text-nowrap bg-green-500 text-white font-semibold rounded-md shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500"
@@ -51,7 +64,7 @@ const SetLocation = () => {
 
 export default SetLocation;
 
-const UserSelect = ({ onChange }) => {
+const UserSelect = ({ onChange, disabled }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -82,6 +95,7 @@ const UserSelect = ({ onChange }) => {
       placeholder="Select a user"
       onChange={onChange}
       style={{ width: 400 }}
+      disabled={disabled} // Disable user select when applying to all
       filterOption={(input, option) => {
         return (
           option.label.toLowerCase().includes(input.toLowerCase()) ||

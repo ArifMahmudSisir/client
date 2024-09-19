@@ -2,7 +2,7 @@ import axios from "axios";
 import { useEffect } from "react";
 
 const axiosSecure = axios.create({
-  baseURL: "server-green-nine.vercel.app/api", 
+  baseURL: "https://roliserver.vercel.app/api", 
   // baseURL: "http://localhost:5000/api", 
 });
 

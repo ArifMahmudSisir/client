@@ -3,14 +3,16 @@ import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import { isPointWithinRadius } from "geolib";
 import { message, Spin } from "antd";
-import moment from "moment";
+import Stopwatch from "./Stopwatch";
+import { UploadSelfieModal } from "./UploadSelfie";
 import { useStopwatch } from "react-timer-hook";
-import { FaPause, FaPlay } from "react-icons/fa";
+import moment from "moment";
 
 const TimeClock = () => {
   const [messageApi, contextHolder] = message.useMessage();
-
   const axiosSecure = useAxiosSecure();
+  const [openSelfieModal, setOpenSelfieModal] = useState(false);
+  const [selfie, setSelfie] = useState(null);
   const [location, setLocation] = useState({
     latitude: null,
     longitude: null,
@@ -23,8 +25,16 @@ const TimeClock = () => {
   });
 
   const { user, loading } = useAuth();
-  const [isRunning, setIsRunning] = useState(false);
   const [isOnRadius, setIsOnRadius] = useState(false);
+
+  const diff = currentAttendance?.data
+    ? 0
+    : moment().diff(currentAttendance?.data?.clockIn, "seconds");
+
+  const stopwatch = useStopwatch({
+    autoStart: currentAttendance?.data === null ? false : true,
+    offsetTimestamp: new Date().setSeconds(new Date().getSeconds() + diff),
+  });
 
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
@@ -63,9 +73,9 @@ const TimeClock = () => {
       setCurrentAttendance({ data: null, loading: true, error: null });
       try {
         if (user.attendance) {
-          const { data } =
-            await axiosSecure.get(`/attendance/users/${user._id}/${user.attendance}
-          `);
+          const { data } = await axiosSecure.get(
+            `/attendance/users/${user._id}/${user.attendance}`
+          );
           setCurrentAttendance({
             data,
             loading: false,
@@ -73,7 +83,14 @@ const TimeClock = () => {
           });
 
           if (!data?.clockOut) {
-            setIsRunning(true);
+            const diff = data.clockOut
+              ? 0
+              : moment().diff(data.clockIn, "seconds");
+            stopwatch.reset(
+              new Date().setSeconds(new Date().getSeconds() + diff),
+              0
+            );
+            stopwatch.start();
           }
         } else {
           setCurrentAttendance({
@@ -98,42 +115,61 @@ const TimeClock = () => {
     fetchAttendance();
   }, [user]);
 
+  const clockIn = async (selfie) => {
+    const radius = 40000000;
+    const [lat, lng] = user.location.coordinates;
+    const isOnRadius = isPointWithinRadius(
+      {
+        latitude: location.latitude,
+        longitude: location.longitude,
+      },
+      {
+        latitude: lat,
+        longitude: lng,
+      },
+      radius
+    );
+
+    if (isOnRadius) {
+      if (location.latitude && location.longitude && user._id) {
+        const res = await axiosSecure.post("/attendance/clock-in", {
+          selfie,
+        });
+        if (res.data.attendance._id) {
+          const { data } = await axiosSecure.get(
+            `/attendance/users/${user._id}/${res.data.attendance._id}`
+          );
+          setCurrentAttendance({
+            data,
+            loading: false,
+            error: null,
+          });
+          stopwatch.start();
+        }
+      }
+    } else {
+      messageApi.open({
+        type: "warning",
+        content: "You must check in at the exact location first.",
+      });
+    }
+  };
+
   const handleClockIn = async () => {
     try {
-      if (!isRunning) {
-        const radius = 40000000;
-        const [lat, lng] = user.location.coordinates;
-        const isOnRadius = isPointWithinRadius(
-          {
-            latitude: location.latitude,
-            longitude: location.longitude,
-          },
-          {
-            latitude: lat,
-            longitude: lng,
-          },
-          radius
-        );
-        setIsOnRadius(isOnRadius);
-
-        if (isOnRadius) {
-          if (location.latitude && location.longitude && user._id) {
-            await axiosSecure.post("/attendance/clock-in", {
-              userId: user._id,
-            });
-            setIsRunning(true);
-          }
+      if (!stopwatch.isRunning) {
+        if (selfie) {
+          clockIn(selfie);
         } else {
-          messageApi.open({
-            type: "warning",
-            content: "You must check in at the exact location first.",
-          });
+          setOpenSelfieModal(true);
         }
       } else {
         await axiosSecure.post("/attendance/clock-out", {
           userId: user._id,
         });
-        setIsRunning(false);
+
+        stopwatch.reset();
+        stopwatch.pause();
       }
     } catch (error) {
       console.log(error);
@@ -142,6 +178,13 @@ const TimeClock = () => {
         content: "Something went wrong!",
       });
       console.log(error);
+    }
+  };
+  const handleUpload = async (val) => {
+    if (val) {
+      setSelfie(val);
+      setOpenSelfieModal(false);
+      clockIn(val);
     }
   };
 
@@ -159,58 +202,18 @@ const TimeClock = () => {
   return (
     <div className="md:w-2/6 my-5 mx-auto p-6">
       <Stopwatch
-        handleClockIn={handleClockIn}
+        onClockIn={handleClockIn}
+        stopwatch={stopwatch}
         attendance={currentAttendance?.data}
-        isOnRadius={isOnRadius}
       />
       {contextHolder}
+      <UploadSelfieModal
+        open={openSelfieModal}
+        onClose={() => setOpenSelfieModal(false)}
+        onConfirm={handleUpload}
+      />
     </div>
   );
 };
 
 export default TimeClock;
-
-const Stopwatch = ({ attendance, handleClockIn, isOnRadius }) => {
-  const diff = attendance?.clockOut
-    ? 0
-    : moment().diff(attendance?.clockIn, "seconds");
-
-  const { seconds, minutes, hours, start, reset, isRunning } = useStopwatch({
-    autoStart: attendance === null ? false : true,
-    offsetTimestamp: new Date().setSeconds(new Date().getSeconds() + diff),
-  });
-
-  const onClockIn = async () => {
-    if (!isRunning && isOnRadius) {
-      start();
-    } else {
-      reset(new Date(), 0);
-    }
-    await handleClockIn();
-  };
-
-  return (
-    <div
-      onClick={onClockIn}
-      className={`${
-        isRunning
-          ? "bg-gradient-to-r from-red-600 via-red-500 to-red-600"
-          : "bg-gradient-to-r from-green-600 via-green-500 to-green-600"
-      } text-white p-6 rounded-lg shadow-lg mb-6 flex items-center justify-between`}
-    >
-      <div>
-        <p className="text-4xl font-bold mb-2">
-          {hours > 0 ? `${hours}:` : ""}
-          {minutes > 0 ? `${minutes}:` : "00:"}
-          {seconds < 10 ? `0${seconds}` : seconds}
-        </p>
-        <h2>{isRunning ? "Clock Out" : "Clock In"}</h2>
-      </div>
-      {isRunning ? (
-        <FaPause className="text-6xl hover:text-gray-500" />
-      ) : (
-        <FaPlay className="text-6xl hover:text-gray-500" />
-      )}
-    </div>
-  );
-};

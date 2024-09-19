@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
-import { DatePicker, Select, Space, Table, Typography } from "antd";
+import { DatePicker, Select, Space, Table, Typography, Row, Col } from "antd";
 import moment from "moment";
 
 const { Text } = Typography;
@@ -68,19 +68,33 @@ const SelfReporting = () => {
 
   const PickerWithType = ({ type, onChange }) => {
     if (type === "range") {
-      return <DatePicker.RangePicker onChange={onChange} />;
+      return (
+        <DatePicker.RangePicker
+          onChange={onChange}
+          className="w-full"
+          showTime={false}
+        />
+      );
     }
     if (type === "time") {
-      return <DatePicker showTime onChange={onChange} />;
+      return (
+        <DatePicker showTime onChange={onChange} className="w-full" />
+      );
     }
     if (type === "date") {
-      return <DatePicker onChange={onChange} />;
+      return (
+        <DatePicker onChange={onChange} className="w-full" />
+      );
     }
     if (type === "month") {
-      return <DatePicker picker="month" onChange={onChange} />;
+      return (
+        <DatePicker picker="month" onChange={onChange} className="w-full" />
+      );
     }
     if (type === "year") {
-      return <DatePicker picker="year" onChange={onChange} />;
+      return (
+        <DatePicker picker="year" onChange={onChange} className="w-full" />
+      );
     }
     return null;
   };
@@ -90,20 +104,20 @@ const SelfReporting = () => {
       title: "Date",
       dataIndex: "date",
       key: "date",
-      render: (text, record) => moment(record.clockIn).format("Do MMM YYYY"),
+      render: (text, record) => moment(record.clockIn).format("D-MM-YY"),
     },
     {
       title: "Clock In",
       dataIndex: "clockIn",
       key: "clockIn",
-      render: (text, record) => moment(record.clockIn).format("h:mm:ss a"),
+      render: (text, record) => moment(record.clockIn).format("h:mm:ss A"),
     },
     {
       title: "Clock Out",
       dataIndex: "clockOut",
       key: "clockOut",
       render: (text, record) =>
-        record.clockOut ? moment(record.clockOut).format("h:mm:ss a") : "N/A",
+        record.clockOut ? moment(record.clockOut).format("h:mm:ss A") : "N/A",
     },
     {
       title: "Total Time",
@@ -117,7 +131,7 @@ const SelfReporting = () => {
         const hours = Math.floor(duration.asHours());
         const minutes = duration.minutes();
         const seconds = duration.seconds();
-        return `${hours} hrs ${minutes} mins ${seconds} secs`;
+        return `${hours}:${minutes}:${seconds}`;
       },
     },
   ];
@@ -137,21 +151,25 @@ const SelfReporting = () => {
   };
 
   return (
-    <div>
-      <h1 className="text-4xl font-bold mb-2">Self Reporting</h1>
-      <Space direction="vertical" size="large">
-        <Space>
-          <Select value={type} onChange={setType}>
-            <Option value="date">Date</Option>
-            <Option value="range">Date Range</Option>
-            <Option value="month">Month</Option>
-            <Option value="year">Year</Option>
-          </Select>
-          <PickerWithType
-            type={type}
-            onChange={type === "range" ? setSelectedDateRange : setSelectedDate}
-          />
-        </Space>
+    <div className="p-4 md:p-8 lg:p-12">
+      <h1 className="text-3xl font-bold mb-4">Self Reporting</h1>
+      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={12} lg={8}>
+            <Select value={type} onChange={setType} style={{ width: "100%" }}>
+              <Option value="date">Date</Option>
+              <Option value="range">Date Range</Option>
+              <Option value="month">Month</Option>
+              <Option value="year">Year</Option>
+            </Select>
+          </Col>
+          <Col xs={24} sm={12} lg={16}>
+            <PickerWithType
+              type={type}
+              onChange={type === "range" ? setSelectedDateRange : setSelectedDate}
+            />
+          </Col>
+        </Row>
         {selectedDate ||
         (type === "range" && selectedDateRange[0] && selectedDateRange[1]) ? (
           <Text>{`Selected ${type}: ${getSelectedDateText()}`}</Text>
@@ -164,11 +182,11 @@ const SelfReporting = () => {
           loading={attendances.loading}
           rowKey={(record) => record._id}
           pagination={{ pageSize: 7 }}
-          scroll={{ y: 300 }}
+          scroll={{ y: 400 }}
           sticky
         />
       ) : (
-        <div style={{ marginTop: "20px", textAlign: "center" }}>
+        <div className="mt-4 text-center">
           <Text type="secondary">
             {!selectedDate &&
               `Please select a ${type} to view attendance records.`}

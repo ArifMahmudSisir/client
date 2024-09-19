@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
-import { Table, Typography } from "antd";
-
+import { Image, Table, Typography } from "antd";
+import moment from "moment";
 const { Text } = Typography;
 
 const AllUsers = () => {
@@ -42,6 +42,66 @@ const AllUsers = () => {
       dataIndex: "role",
       key: "role",
     },
+    {
+      title: "Admin Set location",
+      key: "location",
+      render: (text, record) => {
+        const location = record.location;
+
+        if (location && location.coordinates) {
+          return (
+            <Text type="secondary">
+              <div className="text-neutral-900">{location.label}</div>
+              <div>
+                <div className="text-xs">Lat: {location.coordinates[0]}</div>
+                <div className="text-xs">Lng: {location.coordinates[1]}</div>
+              </div>
+            </Text>
+          );
+        } else {
+          return <Text type="secondary">Location not set</Text>; // Show default message if no location
+        }
+      },
+    },
+    {
+      title: "Current attendance",
+      key: "attendance",
+      render: (text, record) => {
+        const attendance = record.attendance || [];
+        if (record.attendance) {
+          return (
+            <div>
+              <div className="text-xs text-neutral-500">Clocked on,</div>
+              <div>
+                {moment(attendance.clockIn).format("DD/MM/YYYY hh:mm:ss a")}
+              </div>
+              <div>
+                Elapsed:{" "}
+                {moment
+                  .utc(moment().diff(moment(attendance.clockIn)))
+                  .format("HH:mm:ss")}
+              </div>
+            </div>
+          );
+        }
+        return <Text type="secondary">No attendance data</Text>;
+      },
+    },
+    {
+      title: "Selfie",
+      key: "attendance",
+      render: (text, record) => {
+        const attendance = record.attendance || [];
+        if (record.attendance) {
+          return (
+            <div>
+              <Image src={attendance.selfie} height={96} width={96} />
+            </div>
+          );
+        }
+        return <Text type="secondary">No attendance data</Text>;
+      },
+    },
   ];
 
   return (
@@ -60,7 +120,7 @@ const AllUsers = () => {
           loading={loading}
           rowKey={(record) => record._id}
           pagination={{ pageSize: 10 }}
-          scroll={{ x: 'max-content' }} // Optional: Enable horizontal scrolling if needed
+          scroll={{ x: "max-content" }}
         />
       </div>
     </div>

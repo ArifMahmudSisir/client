@@ -109,8 +109,8 @@ export const AuthProvider = ({ children }) => {
 
   const contextValue = {
     ...authState,
-    loading, // Pass loading state to context
-    error, // Pass error state to context
+    loading, 
+    error, 
     registerUser,
     loginUser,
     logoutUser,

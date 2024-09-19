@@ -35,6 +35,7 @@ export const router = createBrowserRouter([
         path: "work-time",
         element: <TimeClock />,
       },
+
       {
         path: "self-reporting",
         element: <SelfReporting />,

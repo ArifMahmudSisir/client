@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import Logo from "../../assets/logo.jpeg";
 
-const SignUp = () => {
+const AdminUserRegister = () => {
   const { registerUser } = useAuth();
   const navigate = useNavigate();
   const {
@@ -14,9 +14,6 @@ const SignUp = () => {
 
   const onSubmit = async (formData) => {
     try {
-      // Set default role value
-      formData.role = "user";
-
       await registerUser(formData);
       // Navigate based on user role
       if (formData.role === "admin") {
@@ -25,7 +22,7 @@ const SignUp = () => {
         navigate("/dashboard/work-time");
       }
     } catch (error) {
-      // Handle registration errors, e.g., show an error message to the user
+      // Handle login errors, e.g., show an error message to the user
       console.error("Submission error:", error.message);
     }
   };
@@ -52,7 +49,19 @@ const SignUp = () => {
                 <span className="text-red-500 ms-2">Username is required</span>
               )}
             </div>
-            
+            <div className="mb-4">
+              <label className="block text-gray-700 font-bold mb-2">Role</label>
+              <input
+                {...register("role", { required: true })}
+                type="text"
+                name="role"
+                className="w-full px-3 py-2 border-b-2 border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                placeholder="Enter your role"
+              />
+              {errors.role && (
+                <span className="text-red-500 ms-2">role is required</span>
+              )}
+            </div>
             <div className="mb-4">
               <label className="block text-gray-700 font-bold mb-2">
                 Email Address
@@ -117,4 +126,4 @@ const SignUp = () => {
   );
 };
 
-export default SignUp;
+export default AdminUserRegister;
